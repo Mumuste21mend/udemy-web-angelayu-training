@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require( "express");
 const ejs = require( "ejs");
 const mongoose = require( "mongoose");
@@ -8,16 +9,21 @@ app.set("view engine", "ejs");
 app.use(express.urlencoded({extended:true}));
 app.use(express.static(__dirname + "/public"));
 
-mongoose.connect("mongodb://localhost:27017/userDB",{useNewUrlParser:true});
+const SECRET_KEY=process.env.SECRET_KEY;
+const DB_HOST=process.env.DB_HOST;
+const DB_PORT=process.env.DB_PORT;
+const DB_NAME=process.env.DB_NAME;
+const PORT=process.env.PORT;
+
+mongoose.connect(`mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`,{useNewUrlParser:true});
 
 const userSchema=new mongoose.Schema({
     email:String,
     password:String
 });
 
-const secret ="Thisisourlittlesecret.";
 
-userSchema.plugin(encrypt,{secret:secret,encryptedFields:['password']});
+userSchema.plugin(encrypt,{secret:SECRET_KEY,encryptedFields:['password']});
 
 const User=mongoose.model("User",userSchema);
 
@@ -48,6 +54,6 @@ app.route("/register")
         aUser.save().then(res.render("secrets",{user:aUser})).catch(console.error);
     
 })
-app.listen(3000,()=>{
-    console.log("successfully connecting to port 3000");
+app.listen(PORT,()=>{
+    console.log(`successfully connecting to port${PORT}`);
 })
